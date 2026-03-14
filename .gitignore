@@ -1,0 +1,17 @@
+# Ignore sensitive files and directories
+
+# Node modules
+node_modules/
+
+# Environment files
+.env
+
+# Logs
+*.log
+
+# Backup files
+*~
+*.bak
+
+# Other sensitive files
+secret/
