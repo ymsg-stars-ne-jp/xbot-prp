@@ -18,8 +18,18 @@ const monitorLog = document.getElementById('monitorLog');
 
 let timerId = null;
 let monitorActive = false;
-let monitorTickInFlight = false;
+let monitorTickPromise = null;
 const monitorIntervalMs = 45000;
+
+function scheduleNextMonitorTick() {
+  if (timerId) {
+    clearTimeout(timerId);
+  }
+
+  timerId = setTimeout(() => {
+    runMonitorTick();
+  }, monitorIntervalMs);
+}
 
 async function fetchJSON(url, options = {}) {
   const res = await fetch(url, options);
@@ -104,41 +114,47 @@ function renderMonitorTick(data) {
 }
 
 async function runMonitorTick() {
-  if (!monitorActive || monitorTickInFlight) return;
+  if (!monitorActive) return;
+  if (monitorTickPromise) return monitorTickPromise;
 
-  const payload = getMonitorSettings();
-  if (payload.usernames.length === 0) {
-    monitorStatus.textContent = '監視対象が未入力です。';
-    stopMonitor();
-    return;
-  }
-
-  monitorTickInFlight = true;
-  try {
-    monitorStatus.textContent = '監視中...';
-    const data = await fetchJSON('../api/monitor_tick.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    renderMonitorTick(data);
-    monitorStatus.textContent = `監視中（${monitorIntervalMs / 1000}秒ごと）`;
-  } catch (err) {
-    monitorStatus.textContent = `監視エラー: ${err.message}`;
-  } finally {
-    monitorTickInFlight = false;
-
-    if (monitorActive) {
-      timerId = setTimeout(() => {
-        runMonitorTick();
-      }, monitorIntervalMs);
+  monitorTickPromise = (async () => {
+    const payload = getMonitorSettings();
+    if (payload.usernames.length === 0) {
+      monitorStatus.textContent = '監視対象が未入力です。';
+      stopMonitor();
+      return;
     }
-  }
+
+    try {
+      monitorStatus.textContent = '監視中...';
+      const data = await fetchJSON('../api/monitor_tick.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      renderMonitorTick(data);
+      monitorStatus.textContent = `監視中（${monitorIntervalMs / 1000}秒ごと）`;
+    } catch (err) {
+      monitorStatus.textContent = `監視エラー: ${err.message}`;
+    } finally {
+      monitorTickPromise = null;
+
+      if (monitorActive) {
+        scheduleNextMonitorTick();
+      }
+    }
+  })();
+
+  return monitorTickPromise;
 }
 
 function startMonitor() {
   if (monitorActive) return;
   monitorActive = true;
+  if (timerId) {
+    clearTimeout(timerId);
+    timerId = null;
+  }
   runMonitorTick();
 }
 
