@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>X Bot Checker</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main class="container">
+    <h1>X Bot Checker</h1>
+    <p class="lead">Xにログインして、怪しいアカウントの診断・リアルタイム監視・自動対応を行います。</p>
+
+    <section id="authCard" class="card">
+      <h2>1. ログイン</h2>
+      <p id="authStatus">ログイン状態を確認中...</p>
+      <button id="loginBtn" class="btn">Xでログイン</button>
+      <button id="logoutBtn" class="btn btn-secondary hidden">ログアウト</button>
+    </section>
+
+    <section id="scanCard" class="card hidden">
+      <h2>2. 単体アカウント診断</h2>
+      <form id="scanForm">
+        <label for="username">ユーザー名（@は不要）</label>
+        <input id="username" name="username" placeholder="example_user" required />
+        <button class="btn" type="submit">診断する</button>
+      </form>
+
+      <div id="loading" class="hidden">診断中...</div>
+      <div id="result" class="result hidden"></div>
+    </section>
+
+    <section id="monitorCard" class="card hidden">
+      <h2>3. リアルタイム監視（自動ブロック / 自動報告）</h2>
+      <label for="monitorUsers">監視ユーザー名（カンマ区切り）</label>
+      <textarea id="monitorUsers" rows="3" placeholder="spam_user1,spam_user2"></textarea>
+
+      <div class="grid2">
+        <label>リスク閾値
+          <input id="riskThreshold" type="number" min="1" max="100" value="75" />
+        </label>
+      </div>
+
+      <label class="check"><input id="autoBlock" type="checkbox" /> 高リスク時に自動ブロック</label>
+      <label class="check"><input id="autoReport" type="checkbox" /> 高リスク時に自動報告（ログ/Webhook）</label>
+      <label class="check"><input id="autoReportOnlyWhenBlocked" type="checkbox" checked /> ブロック成功時のみ自動報告</label>
+
+      <div class="monitor-actions">
+        <button id="startMonitorBtn" class="btn" type="button">監視開始</button>
+        <button id="stopMonitorBtn" class="btn btn-secondary" type="button">監視停止</button>
+      </div>
+
+      <p id="monitorStatus" class="muted">停止中</p>
+      <div id="monitorLog" class="result hidden"></div>
+    </section>
+
+    <section class="card note">
+      <h2>注意</h2>
+      <ul>
+        <li>このツールはスコアによる参考判定です。100%正確ではありません。</li>
+        <li>API権限・利用制限により自動ブロックが失敗する場合があります。</li>
+        <li>自動報告は「ログ保存 + 任意Webhook通知」です（Xへの公式通報は別途実装が必要）。</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="./app.js"></script>
+</body>
+</html>
