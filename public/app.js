@@ -17,6 +17,8 @@ const monitorStatus = document.getElementById('monitorStatus');
 const monitorLog = document.getElementById('monitorLog');
 
 let timerId = null;
+let monitorActive = false;
+let monitorTickInFlight = false;
 const monitorIntervalMs = 45000;
 
 async function fetchJSON(url, options = {}) {
@@ -102,12 +104,16 @@ function renderMonitorTick(data) {
 }
 
 async function runMonitorTick() {
+  if (!monitorActive || monitorTickInFlight) return;
+
   const payload = getMonitorSettings();
   if (payload.usernames.length === 0) {
     monitorStatus.textContent = '監視対象が未入力です。';
+    stopMonitor();
     return;
   }
 
+  monitorTickInFlight = true;
   try {
     monitorStatus.textContent = '監視中...';
     const data = await fetchJSON('../api/monitor_tick.php', {
@@ -119,18 +125,27 @@ async function runMonitorTick() {
     monitorStatus.textContent = `監視中（${monitorIntervalMs / 1000}秒ごと）`;
   } catch (err) {
     monitorStatus.textContent = `監視エラー: ${err.message}`;
+  } finally {
+    monitorTickInFlight = false;
+
+    if (monitorActive) {
+      timerId = setTimeout(() => {
+        runMonitorTick();
+      }, monitorIntervalMs);
+    }
   }
 }
 
 function startMonitor() {
-  if (timerId) return;
+  if (monitorActive) return;
+  monitorActive = true;
   runMonitorTick();
-  timerId = setInterval(runMonitorTick, monitorIntervalMs);
 }
 
 function stopMonitor() {
+  monitorActive = false;
   if (timerId) {
-    clearInterval(timerId);
+    clearTimeout(timerId);
     timerId = null;
   }
   monitorStatus.textContent = '停止中';
