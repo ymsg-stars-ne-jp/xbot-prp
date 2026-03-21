@@ -21,6 +21,17 @@ let monitorActive = false;
 let monitorTickInFlight = false;
 const monitorIntervalMs = 45000;
 
+function scheduleNextMonitorTick() {
+  if (!monitorActive) return;
+  if (timerId) {
+    clearTimeout(timerId);
+  }
+  timerId = setTimeout(() => {
+    timerId = null;
+    runMonitorTick();
+  }, monitorIntervalMs);
+}
+
 async function fetchJSON(url, options = {}) {
   const res = await fetch(url, options);
   const data = await res.json();
@@ -127,12 +138,7 @@ async function runMonitorTick() {
     monitorStatus.textContent = `監視エラー: ${err.message}`;
   } finally {
     monitorTickInFlight = false;
-
-    if (monitorActive) {
-      timerId = setTimeout(() => {
-        runMonitorTick();
-      }, monitorIntervalMs);
-    }
+    scheduleNextMonitorTick();
   }
 }
 
