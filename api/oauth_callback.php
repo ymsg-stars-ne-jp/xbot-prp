@@ -54,6 +54,14 @@ $userResp = xApiGet('/users/me', $accessToken, [
     'user.fields' => 'created_at,description,public_metrics,verified,profile_image_url'
 ]);
 
+if (isset($userResp['_http_status'])) {
+    jsonResponse([
+        'message' => 'ログインユーザー情報の取得に失敗しました。',
+        'status' => (int)$userResp['_http_status'],
+        'error' => $userResp['_error'] ?? null
+    ], (int)$userResp['_http_status']);
+}
+
 if (empty($userResp['data'])) {
     jsonResponse(['message' => 'ログインユーザー情報の取得に失敗しました。'], 502);
 }

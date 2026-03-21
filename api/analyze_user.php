@@ -20,6 +20,18 @@ $userResp = xApiGet('/users/by/username/' . rawurlencode($username), $accessToke
     'user.fields' => 'created_at,description,public_metrics,verified,location,url'
 ]);
 
+if (isset($userResp['_http_status'])) {
+    if ((int)$userResp['_http_status'] === 404) {
+        jsonResponse(['message' => '対象ユーザーが見つかりません。'], 404);
+    }
+
+    jsonResponse([
+        'message' => 'X API呼び出しに失敗しました。',
+        'status' => (int)$userResp['_http_status'],
+        'error' => $userResp['_error'] ?? null
+    ], (int)$userResp['_http_status']);
+}
+
 if (empty($userResp['data'])) {
     jsonResponse(['message' => '対象ユーザーが見つかりません。'], 404);
 }
