@@ -70,14 +70,25 @@ function xApiGet(string $endpoint, string $accessToken, array $query = []): arra
 
     $response = curl_exec($ch);
     $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlErrno = curl_errno($ch);
+    $curlError = curl_error($ch);
     curl_close($ch);
 
-    if ($response === false || $status >= 400) {
+    if ($response === false || $curlErrno !== 0) {
+        jsonResponse([
+            'message' => 'X API呼び出しに失敗しました。',
+            'status' => 0,
+            'error' => $curlError
+        ], 502);
+    }
+
+    if ($status >= 400) {
+        $decodedError = json_decode($response, true);
         jsonResponse([
             'message' => 'X API呼び出しに失敗しました。',
             'status' => $status,
-            'raw' => $response
-        ], 502);
+            'error' => is_array($decodedError) ? $decodedError : $response
+        ], $status);
     }
 
     $decoded = json_decode($response, true);
