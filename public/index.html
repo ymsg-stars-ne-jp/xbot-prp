@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>X Bot Checker</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main class="container">
+    <h1>X Bot Checker</h1>
+    <p class="lead">Xにログインして、怪しいアカウントかどうかを簡易判定します。</p>
+
+    <section id="authCard" class="card">
+      <h2>1. ログイン</h2>
+      <p id="authStatus">ログイン状態を確認中...</p>
+      <button id="loginBtn" class="btn">Xでログイン</button>
+      <button id="logoutBtn" class="btn btn-secondary hidden">ログアウト</button>
+    </section>
+
+    <section id="scanCard" class="card hidden">
+      <h2>2. アカウント診断</h2>
+      <form id="scanForm">
+        <label for="username">ユーザー名（@は不要）</label>
+        <input id="username" name="username" placeholder="example_user" required />
+        <button class="btn" type="submit">診断する</button>
+      </form>
+
+      <div id="loading" class="hidden">診断中...</div>
+      <div id="result" class="result hidden"></div>
+    </section>
+
+    <section class="card note">
+      <h2>注意</h2>
+      <ul>
+        <li>このツールはスコアによる参考判定です。100%正確ではありません。</li>
+        <li>X APIの利用制限・権限によりデータ取得が失敗する場合があります。</li>
+        <li>自動フォロー/自動ブロック等の実行は行いません。</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="./app.js"></script>
+</body>
+</html>
