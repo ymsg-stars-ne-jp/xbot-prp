@@ -82,18 +82,13 @@ function xApiGet(string $endpoint, string $accessToken, array $query = []): arra
         ], 502);
     }
 
-    if ($status >= 400) {
-        $decodedError = json_decode($response, true);
-        jsonResponse([
-            'message' => 'X API呼び出しに失敗しました。',
-            'status' => $status,
-            'error' => is_array($decodedError) ? $decodedError : $response
-        ], $status);
-    }
-
     $decoded = json_decode($response, true);
     if (!is_array($decoded)) {
         jsonResponse(['message' => 'X APIレスポンスの解析に失敗しました。'], 502);
+    }
+
+    if ($status >= 400) {
+        $decoded['_http_status'] = $status;
     }
 
     return $decoded;
